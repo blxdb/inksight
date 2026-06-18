@@ -52,7 +52,7 @@ RUN uv venv --python python3.11 && \
 
 # 额外安装 OpenCV（字符轮廓分割用，无头版本）
 RUN . .venv/bin/activate && \
-    pip install opencv-python-headless --quiet
+    pip install opencv-python-headless tensorflow-text --quiet
 
 # 压缩工具（打包 SVG 用）
 RUN apt-get update && apt-get install -y --no-install-recommends \
