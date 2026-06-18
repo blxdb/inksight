@@ -1,0 +1,13 @@
+# 敏感信息（不进 git）
+共绩算力登陆.txt
+共绩算力_API调查经验总结.md
+
+# Python 缓存
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# 系统
+.DS_Store
+Thumbs.db
