@@ -1,0 +1,31 @@
+# InkSight Docker 镜像 — 排除清单
+# 目标：最小化镜像体积，不加不必要的 G / Python 缓存 / 文档
+
+# 版本控制
+.git/
+.gitignore
+.gitattributes
+
+# 文档 & 素材 (运行时不需要)
+*.md
+*.ipynb
+*.gif
+*.png
+figures/
+docs/
+colab.ipynb
+
+# 平台相关文件 (敏感信息, 不进镜像)
+共绩算力登陆.txt
+共绩算力_API调查经验总结.md
+
+# Python 缓存
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.pytest_cache/
+
+# 系统
+.DS_Store
+Thumbs.db

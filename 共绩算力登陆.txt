@@ -1,0 +1,19 @@
+13568944601
+tanabaM49!
+docker login harborpush.suanleme.cn --username=wangduoduo2026
+docker tag [ImageId] harborpush.suanleme.cn/wangduoduo2026/[镜像名称]:[镜像版本号]
+docker push harborpush.suanleme.cn/wangduoduo2026/[镜像名称]:[镜像版本号]
+API调用：
+https://suanli.cn/docs/platform/openapi/zx3iwhbv1i8sxdkeiapcprxhn8d/
+https://suanli.cn/docs/platform/openapi/m3p6whioxidzwaksughc4gfhnro/
+
+API：
+84c7872c-c821-4add-8834-4cc224bc7cfb-20260612165549
+不要硬编码在任何脚本里面！！
+不要硬编码在任何脚本里面！！
+不要硬编码在任何脚本里面！！
+
+如何加速github和hugging face
+https://suanli.cn/docs/platform/resource-acceleration/b8t4wbnsdieruakadxsc2mnrn2f/
+https://suanli.cn/docs/platform/resource-acceleration/askjwkwl5i5i8fkzkuacbdnfnig/
+
