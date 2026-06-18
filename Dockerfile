@@ -62,7 +62,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # ============================================================
 # 4. 预下载 InkSight 模型（构建时缓存，运行时零等待）
 # ============================================================
-RUN . .venv/bin/activate && python -c "import os; os.environ['TF_CPP_MIN_LOG_LEVEL']='3'; from huggingface_hub import from_pretrained_keras; print('[build] Downloading InkSight Small-p model...'); model = from_pretrained_keras('Derendering/InkSight-Small-p'); print('[build] Model cached ✓')"
+RUN . .venv/bin/activate && python -c "import os; os.environ['TF_CPP_MIN_LOG_LEVEL']='3'; import tensorflow_text; from huggingface_hub import from_pretrained_keras; print('[build] Downloading InkSight Small-p model...'); model = from_pretrained_keras('Derendering/InkSight-Small-p'); print('[build] Model cached ✓')"
 
 # ============================================================
 # 5. 应用代码 & 输入图片
