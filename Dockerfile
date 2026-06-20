@@ -2,7 +2,7 @@
 # InkSight → 单个字符 SVG 转换器
 # slim 基础 + pip 清华镜像 + HF 国内镜像
 # ============================================================
-FROM python:3.11-slim
+FROM docker.m.daocloud.io/library/python:3.11-slim
 
 LABEL description="InkSight - handwriting photo to per-character SVG converter"
 LABEL maintainer="wangduoduo2026"
