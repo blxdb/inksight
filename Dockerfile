@@ -1,9 +1,8 @@
 # ============================================================
 # InkSight → 单个字符 SVG 转换器
-# 目标平台：共绩算力 (suanli.cn) Job批处理 · 抢占式实例
-# Base: NVIDIA CUDA 12.2 + cuDNN 8 (RTX 4090 兼容)
+# slim 基础 + pip 清华镜像 + HF 国内镜像
 # ============================================================
-FROM nvidia/cuda:12.2.2-cudnn8-runtime-ubuntu22.04
+FROM python:3.11-slim
 
 LABEL description="InkSight - handwriting photo to per-character SVG converter"
 LABEL maintainer="wangduoduo2026"
@@ -11,73 +10,48 @@ LABEL maintainer="wangduoduo2026"
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 ENV TF_CPP_MIN_LOG_LEVEL=2
+ENV PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
+ENV PIP_TRUSTED_HOST=pypi.tuna.tsinghua.edu.cn
+ENV HF_ENDPOINT=https://hf-mirror.com
 
-# ============================================================
-# 1. 系统依赖
-# ============================================================
+WORKDIR /app
+
+# ---- 系统依赖 ----
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3.11 \
-    python3.11-dev \
-    python3-pip \
-    python3.11-venv \
+    git \
+    wget \
+    curl \
     tesseract-ocr \
     libgl1-mesa-glx \
     libglib2.0-0 \
-    wget \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
-
-# python -> python3.11
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
-RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
-
-# ============================================================
-# 2. Python 工具链
-# ============================================================
-RUN python -m pip install --upgrade pip uv --quiet
-
-# ============================================================
-# 3. 项目依赖
-# ============================================================
-WORKDIR /app
-
-# 先复制依赖文件（利用 Docker 层缓存）
-COPY pyproject.toml uv.lock ./
-COPY utils/ ./utils/
-
-# 创建虚拟环境并安装所有依赖
-RUN uv venv --python python3.11 && \
-    . .venv/bin/activate && \
-    uv sync
-
-# 额外安装 OpenCV（字符轮廓分割用，无头版本）
-RUN . .venv/bin/activate && \
-    pip install opencv-python-headless tensorflow-text --quiet
-
-# 压缩工具（打包 SVG 用）
-RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
     zip \
     && rm -rf /var/lib/apt/lists/*
 
-# ============================================================
-# 4. 预下载 InkSight 模型（构建时缓存，运行时零等待）
-# ============================================================
+# ---- 安装 uv（PyTorch/TF 项目标准工具） ----
+RUN pip install --no-cache-dir uv
+
+# ---- 复制依赖文件 ----
+COPY pyproject.toml uv.lock ./
+COPY utils/ ./utils/
+
+# ---- 安装项目依赖（虚拟环境） ----
+RUN uv venv && \
+    . .venv/bin/activate && \
+    uv sync --no-cache
+
+# ---- 额外依赖（OpenCV 无头版 + TensorFlow Text） ----
+RUN . .venv/bin/activate && \
+    pip install --no-cache-dir opencv-python-headless tensorflow-text
+
+# ---- 预下载 InkSight 模型（构建时缓存） ----
 RUN . .venv/bin/activate && python -c "import os; os.environ['TF_CPP_MIN_LOG_LEVEL']='3'; import tensorflow_text; from huggingface_hub import from_pretrained_keras; print('[build] Downloading InkSight Small-p model...'); model = from_pretrained_keras('Derendering/InkSight-Small-p'); print('[build] Model cached ✓')"
 
-# ============================================================
-# 5. 应用代码 & 输入图片
-# ============================================================
+# ---- 应用代码 & 输入图片 ----
 COPY process.py entrypoint.sh .
 COPY inksight.jpg .
 
 RUN mkdir -p /output && chmod +x entrypoint.sh
 
-# ============================================================
-# 6. 端口说明（HTTP 下载用，是否映射取决于算力平台）
-# ============================================================
 EXPOSE 8080
-
-# ============================================================
-# 7. 启动
-# ============================================================
 ENTRYPOINT ["/bin/bash", "entrypoint.sh"]
