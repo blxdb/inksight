@@ -1,0 +1,45 @@
+# ============================================================
+# InkSight BASE — 依赖层 + 模型预下载
+# 策略: slim 基础 + pip 清华镜像 + HF 国内镜像
+# TensorFlow 的 pip 包自带 CUDA 运行时，无需额外装 CUDA
+# ============================================================
+FROM docker.m.daocloud.io/library/python:3.11-slim
+
+LABEL description="InkSight BASE — 依赖+模型层"
+LABEL stage="base"
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+ENV TF_CPP_MIN_LOG_LEVEL=2
+ENV PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
+ENV PIP_TRUSTED_HOST=pypi.tuna.tsinghua.edu.cn
+ENV HF_ENDPOINT=https://hf-mirror.com
+
+WORKDIR /app
+
+# ---- 系统依赖 ----
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    wget \
+    curl \
+    tesseract-ocr \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    build-essential \
+    zip \
+    && rm -rf /var/lib/apt/lists/*
+
+# ---- 复制依赖文件 ----
+COPY pyproject.toml uv.lock ./
+COPY utils/ ./utils/
+
+# ---- 安装项目依赖 ————
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install uv && uv sync --no-cache
+
+# ---- 额外依赖 ----
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install opencv-python-headless
+
+# ---- 预下载 InkSight 模型（通过 HF 国内镜像） ----
+RUN python -c "import os; os.environ['TF_CPP_MIN_LOG_LEVEL']='3'; import tensorflow_text; from huggingface_hub import from_pretrained_keras; print('[build] Downloading InkSight Small-p model...'); model = from_pretrained_keras('Derendering/InkSight-Small-p'); print('[build] Model cached ✓')"
