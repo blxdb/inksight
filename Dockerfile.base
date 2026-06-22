@@ -23,7 +23,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     curl \
     tesseract-ocr \
-    libgl1-mesa-glx \
+    libgl1 \
     libglib2.0-0 \
     build-essential \
     zip \
@@ -39,7 +39,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 
 # ---- 额外依赖 ----
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install opencv-python-headless
+    pip install opencv-python-headless tensorflow-text
 
 # ---- 预下载 InkSight 模型（通过 HF 国内镜像） ----
 RUN python -c "import os; os.environ['TF_CPP_MIN_LOG_LEVEL']='3'; import tensorflow_text; from huggingface_hub import from_pretrained_keras; print('[build] Downloading InkSight Small-p model...'); model = from_pretrained_keras('Derendering/InkSight-Small-p'); print('[build] Model cached ✓')"
